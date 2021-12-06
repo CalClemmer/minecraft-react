@@ -1,5 +1,8 @@
 import { render } from "@testing-library/react";
 import React, { useState } from "react";
+
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 import Cell from "./cell";
 
 const Board = (props) => {
@@ -66,32 +69,73 @@ const Board = (props) => {
     return array;
   }
 
-  function renderBoard(data) {
-    console.log("data", data);
+  //   function renderBoard(data) {
+  //     console.log("data", data);
+  //     return data.map((datarow) => {
+  //       return datarow.map((dataitem) => {
+  //         return (
+  //           <div key={dataitem.x * datarow.length + dataitem.y}>
+  //             <Cell
+  //               onClick={() => this.handleCellClick(dataitem.x, dataitem.y)}
+  //               cMenu={(e) => this.handleContextMenu(e, dataitem.x, dataitem.y)}
+  //               value={dataitem}
+  //             />
+  //             {/* // This line of code adds a clearfix div after the last cell of each row. */}
+  //             {datarow[datarow.length - 1] === dataitem ? (
+  //               <div className="clear" />
+  //             ) : (
+  //               ""
+  //             )}
+  //           </div>
+  //         );
+  //       });
+  //     });
+  //   }
+
+  function makeBoard2(data) {
     return data.map((datarow) => {
       return datarow.map((dataitem) => {
         return (
-          <div key={dataitem.x * datarow.length + dataitem.y}>
-            <Cell
-              onClick={() => this.handleCellClick(dataitem.x, dataitem.y)}
-              cMenu={(e) => this.handleContextMenu(e, dataitem.x, dataitem.y)}
-              value={dataitem}
-            />
-            {/* // This line of code adds a clearfix div after the last cell of each row. */}
-            {datarow[datarow.length - 1] === dataitem ? (
-              <div className="clear" />
-            ) : (
-              ""
-            )}
+          <div>
+            <Cell value={dataitem} />
           </div>
         );
       });
     });
   }
 
+  function makeBoard(data) {
+    console.log("data", data);
+    return [
+      <tr>
+        <td>
+          <Cell value={data[0][0]} />
+        </td>
+        <td>
+          <Cell value={data[0][1]} />
+        </td>
+      </tr>,
+      <tr>
+        <Cell value={data[0][0]} />
+        <Cell value={data[0][1]} />
+      </tr>,
+    ];
+  }
+
+  let rows = [<tr>1</tr>, <tr>2</tr>];
+  rows = makeBoard(boardData);
+  console.log("rows", rows);
+
   //   renderBoard(boardData);
   //   initBoard(props.width, props.height, props.mine);
-  return <div>{renderBoard(boardData)}</div>;
+  return (
+    <div>
+      {" "}
+      <table id="simple-board">
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+  );
 };
 
 export default Board;
