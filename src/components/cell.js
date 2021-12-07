@@ -10,7 +10,7 @@ const Cell = (props) => {
   //   (value.isFlagged ? " is-flag" : "");
   let className;
   if (value.isReveal) {
-    className = value.isMine ? "cell is-mine" : "cell" + value.numNeighbor;
+    className = value.isMine ? "cell is-mine" : "cell cell" + value.numNeighbor;
   } else {
     className = "cell hidden";
   }

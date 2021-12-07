@@ -5,7 +5,7 @@ import Cell from "./cell";
 
 const Board = (props) => {
   // define states
-  let [boardData, setBoardData] = useState(initBoard(5, 5, 5));
+  let [boardData, setBoardData] = useState(initBoard(5, 5, 20));
   let [board, setBoard] = useState(renderBoard(boardData));
 
   // function to generate board array
