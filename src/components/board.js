@@ -6,6 +6,7 @@ import Cell from "./cell";
 const Board = (props) => {
   // define states
   let [boardData, setBoardData] = useState(initBoard(4, 4, 5));
+  let [board, setBoard] = useState(renderBoard(boardData));
 
   // function to generate board array
   function initBoard(width, height, mineNum) {
@@ -127,10 +128,13 @@ const Board = (props) => {
   function revealCell(cell) {
     cell.isReveal = true;
     console.log(cell);
+    setBoard(renderBoard(boardData));
   }
 
   // renders board
   function renderBoard(data) {
+    console.log("test");
+    console.log("render", data[0][0]);
     let table = [];
     for (let i = 0; i < data.length; i++) {
       let row = [];
@@ -157,7 +161,7 @@ const Board = (props) => {
     <div>
       {" "}
       <table id="board">
-        <tbody>{renderBoard(boardData)}</tbody>
+        <tbody>{board}</tbody>
       </table>
     </div>
   );

@@ -1,8 +1,17 @@
 .cell {
   width: 25px;
   height: 25px;
+  color: blue;
 }
 
 .hidden {
   color: red;
+}
+
+.is-mine {
+  color: black;
+}
+
+.test {
+  background-color: blue;
 }
