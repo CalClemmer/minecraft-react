@@ -1,31 +1,77 @@
 import { render } from "@testing-library/react";
 import React, { useState } from "react";
 
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Cell from "./cell";
 
 const Board = (props) => {
   // define states
-  let [boardData, setBoardData] = useState(initBoard(5, 6, 10));
+  let [boardData, setBoardData] = useState(initBoard(4, 4, 5));
 
   // function to generate board array
   function initBoard(width, height, mineNum) {
     // console.log("width", width, "height", height, "mine", mine);
     let board = emptyBoard(width, height);
-    // mineBoard(board, mineNum);
+    mineBoard(board, mineNum);
+    getNeighbors(board);
     return board;
   }
 
-  //   setBoardData(initBoard(5, 6, 10));
+  function getNeighbors(board) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        let cell = board[i][j];
+        let num = 0;
+        let neighbors = lookupNeighbors(board, cell);
+        for (let k = 0; k < neighbors.length; k++) {
+          if (neighbors[k].isMine) {
+            num++;
+          }
+        }
+        cell.numNeighbor = num;
+      }
+    }
+  }
+
+  function lookupNeighbors(board, cell) {
+    let ans = [];
+    let x = cell.x;
+    let y = cell.y;
+    let width = board[0].length - 1;
+    let height = board.length - 1;
+    if (y >= 1) {
+      ans.push(board[x][y - 1]);
+      if (x < width) {
+        ans.push(board[x + 1][y - 1]);
+      }
+      if (x >= 1) {
+        ans.push(board[x - 1][y - 1]);
+      }
+    }
+    if (y < height) {
+      ans.push(board[x][y + 1]);
+      if (x < width) {
+        ans.push(board[x + 1][y + 1]);
+      }
+      if (x >= 1) {
+        ans.push(board[x - 1][y + 1]);
+      }
+    }
+    if (x < width) {
+      ans.push(board[x + 1][y]);
+    }
+    if (x >= 1) {
+      ans.push(board[x - 1][y]);
+    }
+    return ans;
+  }
 
   // function to create an empty board array
   function emptyBoard(width, height) {
-    let ans = [];
+    let board = [];
     for (let i = 0; i < height; i++) {
-      ans.push([]);
+      board.push([]);
       for (let j = 0; j < width; j++) {
-        ans[i].push({
+        board[i].push({
           x: i,
           y: j,
           isMine: false,
@@ -34,8 +80,9 @@ const Board = (props) => {
         });
       }
     }
-    return ans;
+    return board;
   }
+
   // function to randomly place mines in board
   function mineBoard(board, mineNum) {
     let height = board.length;
@@ -44,10 +91,18 @@ const Board = (props) => {
     let numArr = [...Array(len).keys()];
     //shuffle numArr outputs something like [5, 3, 1, 2, 4, 0]
     shuffle(numArr);
-    //FIX: Properly getting this to mine
+
+    //failsafe if there are more mines than squares
+    if (mineNum > len) {
+      mineNum = len - 1;
+    }
+
     for (let i = 0; i < mineNum; i++) {
+      // division for row, remainder for column...?
+      let row = Math.floor(numArr[i] / width);
+      let column = numArr[i] % width;
       // place n mines, using the order supplied by numArr
-      board[numArr[i]]["isMine"] = true;
+      board[row][column]["isMine"] = true;
     }
   }
 
@@ -69,70 +124,40 @@ const Board = (props) => {
     return array;
   }
 
-  //   function renderBoard(data) {
-  //     console.log("data", data);
-  //     return data.map((datarow) => {
-  //       return datarow.map((dataitem) => {
-  //         return (
-  //           <div key={dataitem.x * datarow.length + dataitem.y}>
-  //             <Cell
-  //               onClick={() => this.handleCellClick(dataitem.x, dataitem.y)}
-  //               cMenu={(e) => this.handleContextMenu(e, dataitem.x, dataitem.y)}
-  //               value={dataitem}
-  //             />
-  //             {/* // This line of code adds a clearfix div after the last cell of each row. */}
-  //             {datarow[datarow.length - 1] === dataitem ? (
-  //               <div className="clear" />
-  //             ) : (
-  //               ""
-  //             )}
-  //           </div>
-  //         );
-  //       });
-  //     });
-  //   }
+  function revealCell(cell) {
+    cell.isReveal = true;
+    console.log(cell);
+  }
 
-  function makeBoard2(data) {
-    return data.map((datarow) => {
-      return datarow.map((dataitem) => {
-        return (
-          <div>
-            <Cell value={dataitem} />
-          </div>
+  // renders board
+  function renderBoard(data) {
+    let table = [];
+    for (let i = 0; i < data.length; i++) {
+      let row = [];
+      for (let j = 0; j < data[i].length; j++) {
+        let cellID = "cell" + i + j;
+        row.push(
+          <td>
+            <Cell
+              key={cellID}
+              value={data[i][j]}
+              onClick={() => revealCell(data[i][j])}
+            />
+          </td>
         );
-      });
-    });
+      }
+      table.push(<tr key={"row" + i}>{row}</tr>);
+    }
+    return table;
   }
-
-  function makeBoard(data) {
-    console.log("data", data);
-    return [
-      <tr>
-        <td>
-          <Cell value={data[0][0]} />
-        </td>
-        <td>
-          <Cell value={data[0][1]} />
-        </td>
-      </tr>,
-      <tr>
-        <Cell value={data[0][0]} />
-        <Cell value={data[0][1]} />
-      </tr>,
-    ];
-  }
-
-  let rows = [<tr>1</tr>, <tr>2</tr>];
-  rows = makeBoard(boardData);
-  console.log("rows", rows);
 
   //   renderBoard(boardData);
   //   initBoard(props.width, props.height, props.mine);
   return (
     <div>
       {" "}
-      <table id="simple-board">
-        <tbody>{rows}</tbody>
+      <table id="board">
+        <tbody>{renderBoard(boardData)}</tbody>
       </table>
     </div>
   );
