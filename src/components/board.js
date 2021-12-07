@@ -5,7 +5,7 @@ import Cell from "./cell";
 
 const Board = (props) => {
   // define states
-  let [boardData, setBoardData] = useState(initBoard(4, 4, 5));
+  let [boardData, setBoardData] = useState(initBoard(5, 5, 5));
   let [board, setBoard] = useState(renderBoard(boardData));
 
   // function to generate board array
@@ -127,14 +127,11 @@ const Board = (props) => {
 
   function revealCell(cell) {
     cell.isReveal = true;
-    console.log(cell);
     setBoard(renderBoard(boardData));
   }
 
   // renders board
   function renderBoard(data) {
-    console.log("test");
-    console.log("render", data[0][0]);
     let table = [];
     for (let i = 0; i < data.length; i++) {
       let row = [];

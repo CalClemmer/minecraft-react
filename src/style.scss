@@ -1,17 +1,23 @@
 .cell {
-  width: 25px;
-  height: 25px;
+  width: 16px;
+  height: 16px;
   color: blue;
+  background-image: url("/minesweeper.gif");
 }
 
 .hidden {
   color: red;
+  background-position: 0 -39px;
 }
 
 .is-mine {
-  color: black;
+  color: purple;
 }
 
-.test {
-  background-color: blue;
+table td {
+  padding: 0px;
+}
+
+table {
+  border-collapse: collapse;
 }
