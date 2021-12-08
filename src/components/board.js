@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Cell from "./cell";
 
 const Board = (props) => {
-  let height = 5;
-  let width = 5;
-  let mines = 18;
+  let height = 30;
+  let width = 16;
+  let mines = 99;
 
   // define states
   let [boardData, setBoardData] = useState(initBoard(height, width, mines));
@@ -40,12 +40,25 @@ const Board = (props) => {
     }
   }
 
+  function sortNeighbors(neighbors) {
+    let revealed = [];
+    let hidden = [];
+    for (let i = 0; i < neighbors.length; i++) {
+      if (neighbors[i].isReveal) {
+        revealed.push(neighbors[i]);
+      } else hidden.push(neighbors[i]);
+    }
+    return { revealed: revealed, hidden: hidden };
+    //tbh I think the splice already modifies things but unsure
+    // lol it was already modifying things which is no bueno
+  }
+
   function lookupNeighbors(board, cell) {
     let ans = [];
     let x = cell.x;
     let y = cell.y;
-    let width = board[0].length - 1;
-    let height = board.length - 1;
+    let height = board[0].length - 1;
+    let width = board.length - 1;
     if (y >= 1) {
       ans.push(board[x][y - 1]);
       if (x < width) {
@@ -90,6 +103,55 @@ const Board = (props) => {
       }
     }
     return board;
+  }
+
+  function solve() {
+    // dirty inefficient solution first, optimize later
+    for (let i = 0; i < boardData.length; i++) {
+      for (let j = 0; j < boardData[i].length; j++) {
+        let flagNum = 0;
+        let hiddenNum = 0;
+        let cell = boardData[i][j];
+        // situation 1: a cell already has all mines next to it flagged
+        // in which case, cell is safe and should be revealed
+
+        // situation 2: all adjacent cells must be mines,
+        // in which case flag
+        // I need to check if flags + unrevealed = numNeighbor
+
+        let neighbors = lookupNeighbors(boardData, cell);
+        const { revealed, hidden } = sortNeighbors(neighbors);
+        // let revealedNeighbors = removeHiddenNeighbors(neighbors);
+        // hiddenNum = neighbors.length - revealedNeighbors.length;
+        for (let k = 0; k < hidden.length; k++) {
+          if (hidden[k].isFlag) {
+            flagNum++;
+          }
+        }
+
+        // I don't love this solution because
+        // The algorithm is still accessing information it
+        // shouldn't really have... but then again it's
+        // not doing anything with it
+        // Should I eventually write an algorithm to give this algorithm only information
+        // that it should actually have? I dunno
+        if (cell.numNeighbor > 0 && flagNum === cell.numNeighbor) {
+          // right now I'm relying on flags to protect
+          // from setting off mines
+          neighbors.forEach(revealCell);
+        }
+
+        if (flagNum + hidden.length === cell.numNeighbor) {
+          for (let l = 0; l < hidden.length; l++) {
+            hidden[l].isFlag = true;
+          }
+        }
+
+        // if (flagNum + hiddenNum === cell.numNeighbor && cell.isReveal) {
+        //   neighbors.forEach(flagCell);
+        // }
+      }
+    }
   }
 
   // function to randomly place mines in board
@@ -267,6 +329,7 @@ const Board = (props) => {
       </table>
       <div>
         <button onClick={() => reset()}>Reset</button>
+        <button onClick={() => solve()}>Solve</button>
       </div>
     </div>
   );
