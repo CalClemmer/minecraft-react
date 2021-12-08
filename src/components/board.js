@@ -4,9 +4,16 @@ import React, { useState } from "react";
 import Cell from "./cell";
 
 const Board = (props) => {
+  let height = 5;
+  let width = 5;
+  let mines = 18;
+
   // define states
-  let [boardData, setBoardData] = useState(initBoard(5, 5, 20));
+  let [boardData, setBoardData] = useState(initBoard(height, width, mines));
   let [board, setBoard] = useState(renderBoard(boardData));
+  let [lost, setLost] = useState(false);
+  let [won, setWon] = useState(false);
+  let [firstGuess, setFirstGuess] = useState(true);
 
   // function to generate board array
   function initBoard(width, height, mineNum) {
@@ -77,6 +84,7 @@ const Board = (props) => {
           y: j,
           isMine: false,
           isReveal: false,
+          isFlag: false,
           numNeighbor: 0,
         });
       }
@@ -125,9 +133,104 @@ const Board = (props) => {
     return array;
   }
 
+  function revealMines(board) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        let cell = board[i][j];
+        if (cell.isMine) {
+          cell.isReveal = true;
+        }
+      }
+    }
+  }
+
+  function moveMine(cell) {
+    for (let i = 0; i < boardData.length; i++) {
+      for (let j = 0; j < boardData[0].length; j++) {
+        let _cell = boardData[i][j];
+        if (!_cell.isMine) {
+          _cell.isMine = true;
+          cell.isMine = false;
+          getNeighbors(boardData);
+          // setBoard(renderBoard(boardData));
+          return;
+        }
+      }
+    }
+  }
   function revealCell(cell) {
-    cell.isReveal = true;
+    if (firstGuess && cell.isMine) {
+      moveMine(cell);
+      revealCell(cell);
+      return;
+    }
+
+    setFirstGuess(false);
+    firstGuess = false;
+
+    if (!cell.isReveal && !cell.isFlag && !lost && !won) {
+      cell.isReveal = true;
+
+      if (cell.isMine) {
+        // I'm clearly not understanding something about how state works
+        // since setLost on it's own isn't working. Hm.
+        lost = true;
+        setLost(true);
+        revealMines(boardData);
+      }
+
+      // recursively reveal all 0 neighbors
+      if (cell.numNeighbor === 0) {
+        let neighbors = lookupNeighbors(boardData, cell);
+        neighbors.forEach(revealCell);
+      }
+      if (checkWon(boardData)) {
+        // why don't i understand states yet
+        setWon(true);
+        won = true;
+        revealMines(boardData);
+        console.log("You win");
+      }
+      setBoard(renderBoard(boardData));
+    }
+  }
+
+  function checkWon(board) {
+    // probably a more efficient way to do this
+    // than a nested for loop
+    // but almost certainly good enough for my immediate needs
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        let cell = board[i][j];
+        //check all cells, if all cells revealed except mines you win
+        if (!cell.isReveal && !cell.isMine) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function reset() {
+    // again, I'm not understanding something about state here
+    setLost(false);
+    lost = false;
+    setWon(false);
+    setFirstGuess(true);
+    firstGuess = true;
+    setBoardData(initBoard(width, height, mines));
     setBoard(renderBoard(boardData));
+  }
+
+  function flagCell(cell) {
+    if (!won && !lost) {
+      cell.isFlag = !cell.isFlag;
+      setBoard(renderBoard(boardData));
+    }
+  }
+
+  function prevent(e) {
+    e.preventDefault();
   }
 
   // renders board
@@ -143,6 +246,10 @@ const Board = (props) => {
               key={cellID}
               value={data[i][j]}
               onClick={() => revealCell(data[i][j])}
+              onContextMenu={(e) => {
+                flagCell(data[i][j]);
+                prevent(e);
+              }}
             />
           </td>
         );
@@ -152,14 +259,15 @@ const Board = (props) => {
     return table;
   }
 
-  //   renderBoard(boardData);
-  //   initBoard(props.width, props.height, props.mine);
   return (
     <div>
-      {" "}
+      <div>Mines: {mines}</div>{" "}
       <table id="board">
         <tbody>{board}</tbody>
       </table>
+      <div>
+        <button onClick={() => reset()}>Reset</button>
+      </div>
     </div>
   );
 };

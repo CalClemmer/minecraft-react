@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 const Cell = (props) => {
   // define states
-  const { value, onClick } = props;
+  const { value, onClick, onContextMenu } = props;
   // let className =
   //   "cell" +
   //   (value.isReveal ? "" : " hidden") +
@@ -10,21 +10,17 @@ const Cell = (props) => {
   //   (value.isFlagged ? " is-flag" : "");
   let className;
   if (value.isReveal) {
-    className = value.isMine ? "cell is-mine" : "cell cell" + value.numNeighbor;
+    className = value.isMine ? "is-mine" : "cell" + value.numNeighbor;
   } else {
-    className = "cell hidden";
-  }
-  let display = "O";
-  if (props.value.isMine) {
-    display = "X";
-  } else {
-    display = props.value.numNeighbor;
+    className = value.isFlag ? "hidden is-flag" : "hidden";
   }
 
   return (
-    <div className={className} onClick={onClick}>
-      {/* {display} */}
-    </div>
+    <div
+      className={"cell " + className}
+      onClick={onClick}
+      onContextMenu={onContextMenu}
+    ></div>
   );
 };
 
