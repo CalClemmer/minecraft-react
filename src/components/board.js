@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import Cell from "./cell";
 
 const Board = (props) => {
-  let height = 30;
-  let width = 16;
-  let mines = 99;
+  let height = 5;
+  let width = 10;
+  let mines = 5;
 
   // define states
-  let [boardData, setBoardData] = useState(initBoard(height, width, mines));
+  let [boardData, setBoardData] = useState(initBoard(width, height, mines));
   let [board, setBoard] = useState(renderBoard(boardData));
   let [lost, setLost] = useState(false);
   let [won, setWon] = useState(false);
@@ -17,7 +17,6 @@ const Board = (props) => {
 
   // function to generate board array
   function initBoard(width, height, mineNum) {
-    // console.log("width", width, "height", height, "mine", mine);
     let board = emptyBoard(width, height);
     mineBoard(board, mineNum);
     getNeighbors(board);
@@ -105,6 +104,7 @@ const Board = (props) => {
     return board;
   }
 
+  // function to solve board
   function solve() {
     // dirty inefficient solution first, optimize later
     for (let i = 0; i < boardData.length; i++) {
@@ -125,10 +125,10 @@ const Board = (props) => {
         // hiddenNum = neighbors.length - revealedNeighbors.length;
         for (let k = 0; k < hidden.length; k++) {
           if (hidden[k].isFlag) {
+            //this isn't updating outside of this function
             flagNum++;
           }
         }
-
         // I don't love this solution because
         // The algorithm is still accessing information it
         // shouldn't really have... but then again it's
@@ -141,7 +141,7 @@ const Board = (props) => {
           neighbors.forEach(revealCell);
         }
 
-        if (flagNum + hidden.length === cell.numNeighbor) {
+        if (hidden.length === cell.numNeighbor) {
           for (let l = 0; l < hidden.length; l++) {
             hidden[l].isFlag = true;
           }
