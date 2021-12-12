@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Cell from "./cell";
 
 const Board = (props) => {
+  // these are ultimate arbiters of truth for variables
   let height = 5;
   let width = 10;
   let mines = 5;
@@ -54,8 +55,8 @@ const Board = (props) => {
 
   function lookupNeighbors(board, cell) {
     let ans = [];
-    let x = cell.x;
     let y = cell.y;
+    let x = cell.x;
     let height = board[0].length - 1;
     let width = board.length - 1;
     if (y >= 1) {
@@ -101,6 +102,7 @@ const Board = (props) => {
         });
       }
     }
+    console.log("board", board);
     return board;
   }
 
