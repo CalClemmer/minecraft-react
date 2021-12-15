@@ -5,16 +5,19 @@ import Cell from "./cell";
 
 const Board = (props) => {
   // these are ultimate arbiters of truth for variables
+  // okay these are basically never updating uh
+  // I need to learn more about state and come back
   let height = 5;
   let width = 10;
-  let mines = 5;
+  let mines = 45;
+  let lost = false;
+  let won = false;
+  let firstGuess = true;
+  let boardData = initBoard(width, height, mines);
 
   // define states
-  let [boardData, setBoardData] = useState(initBoard(width, height, mines));
+  // let [boardData, setBoardData] = useState(initBoard(width, height, mines));
   let [board, setBoard] = useState(renderBoard(boardData));
-  let [lost, setLost] = useState(false);
-  let [won, setWon] = useState(false);
-  let [firstGuess, setFirstGuess] = useState(true);
 
   // function to generate board array
   function initBoard(width, height, mineNum) {
@@ -57,31 +60,31 @@ const Board = (props) => {
     let ans = [];
     let y = cell.y;
     let x = cell.x;
-    let height = board[0].length - 1;
-    let width = board.length - 1;
+    let height = board.length - 1;
+    let width = board[0].length - 1;
     if (y >= 1) {
-      ans.push(board[x][y - 1]);
+      ans.push(board[y - 1][x]);
       if (x < width) {
-        ans.push(board[x + 1][y - 1]);
+        ans.push(board[y - 1][x + 1]);
       }
       if (x >= 1) {
-        ans.push(board[x - 1][y - 1]);
+        ans.push(board[y - 1][x - 1]);
       }
     }
     if (y < height) {
-      ans.push(board[x][y + 1]);
+      ans.push(board[y + 1][x]);
       if (x < width) {
-        ans.push(board[x + 1][y + 1]);
+        ans.push(board[y + 1][x + 1]);
       }
       if (x >= 1) {
-        ans.push(board[x - 1][y + 1]);
+        ans.push(board[y + 1][x - 1]);
       }
     }
     if (x < width) {
-      ans.push(board[x + 1][y]);
+      ans.push(board[y][x + 1]);
     }
     if (x >= 1) {
-      ans.push(board[x - 1][y]);
+      ans.push(board[y][x - 1]);
     }
     return ans;
   }
@@ -93,8 +96,8 @@ const Board = (props) => {
       board.push([]);
       for (let j = 0; j < width; j++) {
         board[i].push({
-          x: i,
-          y: j,
+          x: j,
+          y: i,
           isMine: false,
           isReveal: false,
           isFlag: false,
@@ -102,18 +105,18 @@ const Board = (props) => {
         });
       }
     }
-    console.log("board", board);
     return board;
   }
 
   // function to solve board
   function solve() {
+    let data = boardData;
+    console.log("data", data);
     // dirty inefficient solution first, optimize later
-    for (let i = 0; i < boardData.length; i++) {
-      for (let j = 0; j < boardData[i].length; j++) {
+    for (let i = 0; i < data.length; i++) {
+      for (let j = 0; j < data[i].length; j++) {
         let flagNum = 0;
-        let hiddenNum = 0;
-        let cell = boardData[i][j];
+        let cell = data[i][j];
         // situation 1: a cell already has all mines next to it flagged
         // in which case, cell is safe and should be revealed
 
@@ -121,13 +124,12 @@ const Board = (props) => {
         // in which case flag
         // I need to check if flags + unrevealed = numNeighbor
 
-        let neighbors = lookupNeighbors(boardData, cell);
+        let neighbors = lookupNeighbors(data, cell);
         const { revealed, hidden } = sortNeighbors(neighbors);
         // let revealedNeighbors = removeHiddenNeighbors(neighbors);
         // hiddenNum = neighbors.length - revealedNeighbors.length;
         for (let k = 0; k < hidden.length; k++) {
           if (hidden[k].isFlag) {
-            //this isn't updating outside of this function
             flagNum++;
           }
         }
@@ -142,7 +144,7 @@ const Board = (props) => {
           // from setting off mines
           neighbors.forEach(revealCell);
         }
-
+        //not seeing any hidden lengths of 1 after reset, even when there should be
         if (hidden.length === cell.numNeighbor) {
           for (let l = 0; l < hidden.length; l++) {
             hidden[l].isFlag = true;
@@ -223,13 +225,13 @@ const Board = (props) => {
     }
   }
   function revealCell(cell) {
+    //this code ensures that the first click will never be on a mine
     if (firstGuess && cell.isMine) {
       moveMine(cell);
       revealCell(cell);
       return;
     }
 
-    setFirstGuess(false);
     firstGuess = false;
 
     if (!cell.isReveal && !cell.isFlag && !lost && !won) {
@@ -239,7 +241,6 @@ const Board = (props) => {
         // I'm clearly not understanding something about how state works
         // since setLost on it's own isn't working. Hm.
         lost = true;
-        setLost(true);
         revealMines(boardData);
       }
 
@@ -250,7 +251,6 @@ const Board = (props) => {
       }
       if (checkWon(boardData)) {
         // why don't i understand states yet
-        setWon(true);
         won = true;
         revealMines(boardData);
         console.log("You win");
@@ -277,12 +277,17 @@ const Board = (props) => {
 
   function reset() {
     // again, I'm not understanding something about state here
-    setLost(false);
+    // turns out state is asynchronous and probably doesn't need to be used here
     lost = false;
-    setWon(false);
-    setFirstGuess(true);
-    firstGuess = true;
-    setBoardData(initBoard(width, height, mines));
+
+    // this is also doing nothing. great.
+    // firstGuess = true;
+
+    // setBoardData(initBoard(width, height, mines));
+    console.log("old data", boardData);
+    //... how the heck is this line doing nothing
+    // why the heck does this function still work O_O
+    // boardData = initBoard(width, height, mines);
     setBoard(renderBoard(boardData));
   }
 
